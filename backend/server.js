@@ -9,23 +9,27 @@ import cors from "cors";
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-let is;
-
-// middleware
+// ✅ middleware
 app.use(express.json());
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: process.env.CLIENT_URL || "http://localhost:5173", // ✅ production safe
     credentials: true,
   })
 );
 
-// Post http://localhost:8000/api/v1/user/register
+// ✅ health check route (fixes "Cannot GET /")
+app.get("/", (req, res) => {
+  res.send("✅ Ekart Backend API is Live");
+});
+
+// ✅ routes
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/product", productRoute);
 app.use("/api/v1/cart", cartRoute);
 
-app.listen(PORT, () => {
-  connectDB();
-  console.log(`Server is running on port ${PORT}`);
+// ✅ server start (Render-safe)
+app.listen(PORT, async () => {
+  await connectDB(); // ✅ ensures DB connects before traffic
+  console.log(`✅ Server is running on port ${PORT}`);
 });
