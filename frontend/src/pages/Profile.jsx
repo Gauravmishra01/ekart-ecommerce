@@ -15,7 +15,7 @@ const Profile = () => {
   const { userId } = useParams();
   const dispatch = useDispatch();
 
-  const [loading, setLoading] = useState(false); // ✅ LOADING STATE
+  const [loading, setLoading] = useState(false);
 
   const [updateUser, setUpdateUser] = useState({
     firstName: user?.firstName || "",
@@ -48,7 +48,7 @@ const Profile = () => {
     });
   };
 
-  // ✅ SUBMIT HANDLER WITH LOADING
+  // ✅ ✅ SUBMIT HANDLER (PRODUCTION SAFE)
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -76,7 +76,7 @@ const Profile = () => {
       }
 
       const res = await axios.put(
-        `http://localhost:8000/api/v1/user/update/${userId}`,
+        `${import.meta.env.VITE_API_URL}/api/v1/user/update/${userId}`,
         formData,
         {
           headers: {
@@ -91,7 +91,7 @@ const Profile = () => {
         dispatch(setUser(res.data.user));
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
       toast.error("Failed to update profile");
     } finally {
       setLoading(false);
