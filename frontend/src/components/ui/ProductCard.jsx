@@ -9,7 +9,7 @@ const ProductCard = ({ product }) => {
       const token = localStorage.getItem("token");
 
       const res = await axios.post(
-        "http://localhost:8000/api/v1/cart/add",
+        `${import.meta.env.VITE_API_URL}/api/v1/cart/add`,
         { productId: product._id },
         {
           headers: {
