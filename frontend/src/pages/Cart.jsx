@@ -7,9 +7,13 @@ const Cart = () => {
 
   const fetchCart = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/api/v1/cart", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/v1/cart`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
       if (res.data.success) setCart(res.data.cart);
     } catch (error) {
       console.log(error);
@@ -22,7 +26,7 @@ const Cart = () => {
 
   const updateQty = async (productId, type) => {
     await axios.put(
-      "http://localhost:8000/api/v1/cart/update",
+      `${import.meta.env.VITE_API_URL}/api/v1/cart/update`,
       { productId, type },
       {
         headers: { Authorization: `Bearer ${token}` },
@@ -34,7 +38,7 @@ const Cart = () => {
   };
 
   const removeItem = async (productId) => {
-    await axios.delete("http://localhost:8000/api/v1/cart/remove", {
+    await axios.delete(`${import.meta.env.VITE_API_URL}/api/v1/cart/remove`, {
       headers: { Authorization: `Bearer ${token}` },
       data: { productId },
     });
@@ -107,7 +111,6 @@ const Cart = () => {
             </div>
           ))}
 
-          {/* ✅ TOTAL */}
           <div className="text-right mt-8">
             <h2 className="text-2xl font-bold">Total: ₹{totalPrice}</h2>
           </div>
