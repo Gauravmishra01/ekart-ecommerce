@@ -1,12 +1,14 @@
 import { ShoppingCart } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { Button } from "../button";
 import axios from "axios";
 import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
 import { setUser } from "@/redux/userSlice";
+
+const API = "https://ekart-ecommerce.onrender.com"; // ✅ LIVE BACKEND
 
 const Navbar = () => {
   const { user } = useSelector((store) => store.user);
@@ -26,17 +28,14 @@ const Navbar = () => {
         return;
       }
 
-      const res = await axios.get("http://localhost:8000/api/v1/cart", {
+      const res = await axios.get(`${API}/api/v1/cart`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
       const items = res.data?.cart?.items || [];
-
       const total = items.reduce((sum, item) => sum + (item.quantity || 1), 0);
-
-      console.log("✅ NAVBAR CART COUNT =", total); // DEBUG LINE
 
       setCartCount(total);
     } catch (error) {
@@ -50,14 +49,13 @@ const Navbar = () => {
 
   // ✅ Auto Update Cart Badge Live
   useEffect(() => {
-    fetchCartCount(); // ✅ Runs AFTER login now
+    fetchCartCount();
 
     window.addEventListener("cartUpdated", fetchCartCount);
-
     return () => {
       window.removeEventListener("cartUpdated", fetchCartCount);
     };
-  }, [user, accessToken]); // ✅ THIS IS THE REAL FIX
+  }, [user, accessToken]);
 
   // ✅ Logout
   const logoutHandler = async () => {
@@ -66,7 +64,7 @@ const Navbar = () => {
 
       if (token) {
         await axios.post(
-          "http://localhost:8000/api/v1/user/logout",
+          `${API}/api/v1/user/logout`,
           {},
           {
             headers: {
@@ -78,7 +76,6 @@ const Navbar = () => {
     } catch (error) {
       console.warn("Logout API failed, forcing local logout");
     } finally {
-      // ✅ FORCE LOGOUT EVEN IF API FAILS
       localStorage.removeItem("accessToken");
       dispatch(setUser(null));
       setCartCount(0);
@@ -87,7 +84,6 @@ const Navbar = () => {
     }
   };
 
-  // ✅ Safe User ID
   const resolvedUserId = user?._id || user?.id;
 
   return (
