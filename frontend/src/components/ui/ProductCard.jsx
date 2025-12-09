@@ -8,6 +8,11 @@ const ProductCard = ({ product }) => {
     try {
       const token = localStorage.getItem("token");
 
+      if (!token) {
+        toast.error("Please login first");
+        return;
+      }
+
       const res = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/v1/cart/add`,
         { productId: product._id },
@@ -23,6 +28,7 @@ const ProductCard = ({ product }) => {
         window.dispatchEvent(new Event("cartUpdated"));
       }
     } catch (error) {
+      console.error(error);
       toast.error("Login first to add product");
     }
   };
