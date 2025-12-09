@@ -36,7 +36,7 @@ export const isAuthenticated = async (req, res, next) => {
       });
     }
     req.user = user;
-    req.id = user.id;
+    req.id = user._id;
     next();
   } catch (error) {
     return res.status(500).json({
