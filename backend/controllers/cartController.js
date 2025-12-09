@@ -6,12 +6,20 @@ import { Product } from "../models/productModel.js";
 ========================= */
 export const getCart = async (req, res) => {
   try {
+    // ✅ DISABLE CACHE (THIS FIXES 304 FOREVER)
+    res.setHeader("Cache-Control", "no-store");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
+
     const userId = req.id;
 
     const cart = await Cart.findOne({ userId }).populate("items.productId");
 
     if (!cart) {
-      return res.json({ success: true, cart: [] });
+      return res.status(200).json({
+        success: true,
+        cart: { items: [] }, // ✅ IMPORTANT: keep structure consistent
+      });
     }
 
     res.status(200).json({ success: true, cart });

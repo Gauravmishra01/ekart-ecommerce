@@ -1,6 +1,7 @@
 import { ShoppingCart } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+
 import { Button } from "../button";
 import axios from "axios";
 import { toast } from "sonner";
@@ -18,50 +19,71 @@ const Navbar = () => {
   // ✅ Fetch Cart Count
   const fetchCartCount = async () => {
     try {
+      const token = localStorage.getItem("accessToken");
+
+      if (!token) {
+        setCartCount(0);
+        return;
+      }
+
       const res = await axios.get("http://localhost:8000/api/v1/cart", {
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
-      setCartCount(res.data.cart?.items?.length || 0);
+      const items = res.data?.cart?.items || [];
+
+      const total = items.reduce((sum, item) => sum + (item.quantity || 1), 0);
+
+      console.log("✅ NAVBAR CART COUNT =", total); // DEBUG LINE
+
+      setCartCount(total);
     } catch (error) {
+      console.log(
+        "❌ NAVBAR CART ERROR:",
+        error.response?.data || error.message
+      );
       setCartCount(0);
     }
   };
 
   // ✅ Auto Update Cart Badge Live
   useEffect(() => {
-    if (accessToken) {
-      fetchCartCount();
-    }
+    fetchCartCount(); // ✅ Runs AFTER login now
 
     window.addEventListener("cartUpdated", fetchCartCount);
-    return () => window.removeEventListener("cartUpdated", fetchCartCount);
-  }, [accessToken]);
+
+    return () => {
+      window.removeEventListener("cartUpdated", fetchCartCount);
+    };
+  }, [user, accessToken]); // ✅ THIS IS THE REAL FIX
 
   // ✅ Logout
   const logoutHandler = async () => {
     try {
-      const res = await axios.post(
-        `http://localhost:8000/api/v1/user/logout`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
+      const token = localStorage.getItem("accessToken");
 
-      if (res.data.success) {
-        localStorage.removeItem("accessToken");
-        dispatch(setUser(null));
-        setCartCount(0);
-        toast.success("Logout Successful");
-        navigate("/login");
+      if (token) {
+        await axios.post(
+          "http://localhost:8000/api/v1/user/logout",
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
       }
     } catch (error) {
-      toast.error("Logout failed");
+      console.warn("Logout API failed, forcing local logout");
+    } finally {
+      // ✅ FORCE LOGOUT EVEN IF API FAILS
+      localStorage.removeItem("accessToken");
+      dispatch(setUser(null));
+      setCartCount(0);
+      toast.success("Logged out");
+      navigate("/login");
     }
   };
 
