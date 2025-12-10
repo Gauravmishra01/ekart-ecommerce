@@ -39,28 +39,35 @@ const Signup = () => {
   const submitHandler = async (e) => {
     e.preventDefault();
     console.log(formData);
+
     try {
       setLoading(true);
+
       const res = await axios.post(
-        `http://localhost:8000/api/v1/user/register`,
+        `${import.meta.env.VITE_API_URL}/api/v1/user/register`,
         formData,
         {
           headers: {
             "Content-Type": "application/json",
           },
+          withCredentials: true,
         }
       );
+
       if (res.data.success) {
-        navigate("/verify");
         toast.success(res.data.message);
+        navigate("/verify");
       }
     } catch (error) {
       console.log("Signup Failed:", error);
-      toast.error(error.response.data.message);
+      toast.error(
+        error?.response?.data?.message || "Signup failed. Try again."
+      );
     } finally {
       setLoading(false);
     }
   };
+
   return (
     <div className="flex justify-center items-center min-h-screen bg-red-100">
       <Card className="w-full max-w-sm">
