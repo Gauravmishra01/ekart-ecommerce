@@ -1,31 +1,39 @@
 import nodemailer from "nodemailer";
 import "dotenv/config";
 
-export const verifyEmail = (token, email) => {
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.MAIL_USER,
-      pass: process.env.MAIL_PASS,
-    },
-  });
+export const verifyEmail = async (token, email) => {
+  try {
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASS,
+      },
+    });
 
-  const mailConfigurations = {
-    from: process.env.MAIL_USER,
+    const verifyLink = `${process.env.CLIENT_URL}/verify/${token}`;
 
-    to: email,
-    subject: "Email Verification",
+    const mailConfigurations = {
+      from: process.env.MAIL_USER,
+      to: email,
+      subject: "Email Verification",
+      text: `Hi!
 
-    // This would be the text of email body
-    text: `Hi! There, You have recently visited 
-           our website and entered your email.
-           Please follow the given link to verify your email
-           http://localhost:5173/verify/${token} 
-           Thanks`,
-  };
-  transporter.sendMail(mailConfigurations, function (error, info) {
-    if (error) throw Error(error);
-    console.log("Email Sent Successfully");
-    console.log(info);
-  });
+You recently created an account on Ekart.
+Please click the link below to verify your email:
+
+${verifyLink}
+
+If you did not request this, please ignore this email.
+
+Thanks,
+Ekart Team`,
+    };
+
+    await transporter.sendMail(mailConfigurations);
+
+    console.log("✅ Email Sent Successfully");
+  } catch (error) {
+    console.error("❌ Email Send Failed:", error.message);
+  }
 };
